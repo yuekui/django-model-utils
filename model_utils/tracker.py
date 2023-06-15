@@ -352,6 +352,7 @@ class FieldTracker:
             return  # Only init instances of given model (including children)
         tracker = self.tracker_class(instance, self.fields, self.field_map)
         setattr(instance, self.attname, tracker)
+        print(f"initialize_tracker: {instance}, {self.attname}, {tracker}")
         tracker.set_saved_fields()
         instance._instance_initialized = True
 
