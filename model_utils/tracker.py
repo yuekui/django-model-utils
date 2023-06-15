@@ -344,8 +344,8 @@ class FieldTracker:
         models.signals.post_init.connect(self.initialize_tracker, sender=sender)
         
         def init_subclass(cls, finalize_class=self.finalize_class, parent_cls=sender, **kwargs):
-            models.signals.class_prepared.connect(finalize_class, sender=cls)
             super(parent_cls, cls).__init_subclass__(**kwargs)
+            models.signals.class_prepared.connect(finalize_class, sender=cls)
             
         sender.__init_subclass__ = classmethod(init_subclass)
         self.model_class = sender
@@ -353,7 +353,7 @@ class FieldTracker:
         self.patch_save(sender)
         
     def initialize_tracker(self, sender, instance, **kwargs):
-        print(f"initialize_tracker: {self}, {sender}, {instance}")
+        print(f"initialize_tracker: {self}, {sender}, {instance}, {self.model_class}")
         if not isinstance(instance, self.model_class):
             return  # Only init instances of given model (including children)
         tracker = self.tracker_class(instance, self.fields, self.field_map)
