@@ -342,6 +342,8 @@ class FieldTracker:
         self.field_map = self.get_field_map(sender)
         print(self, sender)
         models.signals.post_init.connect(self.initialize_tracker, sender=sender)
+        for subclass in sender.__subclasses__():
+            models.signals.post_init.connect(self.initialize_tracker, sender=subclass)
         self.model_class = sender
         setattr(sender, self.name, self)
         self.patch_save(sender)
