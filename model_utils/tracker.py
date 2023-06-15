@@ -343,19 +343,14 @@ class FieldTracker:
         print(self, sender)
         models.signals.post_init.connect(self.initialize_tracker, sender=sender)
         
-        def init_subclass(cls, **kwargs):
-            super().__init_subclass__(**kwargs)
-            models.signals.post_init.connect(self.initialize_tracker, sender=cls)
-            
-        sender.__init_subclass__ = init_subclass
+        sender.__init_subclass__ = self.init_subclass
         self.model_class = sender
         setattr(sender, self.name, self)
         self.patch_save(sender)
 
-    @classmethod
-    def __init_subclass__(cls, **kwargs):
-        super().__init_subclass__(**kwargs)
-        models.signals.post_init.connect(self.initialize_tracker, sender=subclass)
+    def init_subclass(self, cls, **kwargs):
+        super(cls, cls).__init_subclass__(**kwargs)
+        models.signals.post_init.connect(self.initialize_tracker, sender=cls)
         
     def initialize_tracker(self, sender, instance, **kwargs):
         print(f"initialize_tracker: {self}, {sender}, {instance}")
