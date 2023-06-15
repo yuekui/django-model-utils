@@ -328,9 +328,12 @@ class FieldTracker:
     def contribute_to_class(self, cls, name):
         self.name = name
         self.attname = '_%s' % name
-        models.signals.class_prepared.connect(self.finalize_class, sender=cls)
+        self.model_class = cls
+        models.signals.class_prepared.connect(self.finalize_class)
 
     def finalize_class(self, sender, **kwargs):
+        if not issubclass(sender, self.model_class):
+            return
         if self.fields is None:
             self.fields = (field.attname for field in sender._meta.fields)
         self.fields = set(self.fields)
@@ -342,14 +345,6 @@ class FieldTracker:
         self.field_map = self.get_field_map(sender)
         print(self, sender)
         models.signals.post_init.connect(self.initialize_tracker, sender=sender)
-        
-        def init_subclass(cls, field_tracker=self, parent_cls=sender, **kwargs):
-            super(parent_cls, cls).__init_subclass__(**kwargs)
-            print(f"init_subclass: {parent_cls}, {cls}, {field_tracker}")
-            models.signals.class_prepared.connect(field_tracker.finalize_class, sender=cls)
-            models.signals.post_init.connect(field_tracker.initialize_tracker, sender=cls)
-            
-        sender.__init_subclass__ = classmethod(init_subclass)
         setattr(sender, self.name, self)
         self.patch_save(sender)
         
