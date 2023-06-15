@@ -343,9 +343,9 @@ class FieldTracker:
         print(self, sender)
         models.signals.post_init.connect(self.initialize_tracker, sender=sender)
         
-        def init_subclass(cls, initialize_tracker=self.initialize_tracker, parent_cls=sender, **kwargs):
+        def init_subclass(cls, finalize_class=self.finalize_class, parent_cls=sender, **kwargs):
             super(parent_cls, cls).__init_subclass__(**kwargs)
-            models.signals.post_init.connect(initialize_tracker, sender=cls)
+            models.signals.class_prepared.connect(finalize_class, sender=cls)
             
         sender.__init_subclass__ = classmethod(init_subclass)
         self.model_class = sender
